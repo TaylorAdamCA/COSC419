@@ -1,4 +1,4 @@
-
+config.py
 #don't track content of these folders
 bootstrap/
 data/
@@ -11,7 +11,7 @@ data/
 *.exe
 *.o
 *.so
-
+*.pyc
 *.so
 
 # Packages #
