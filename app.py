@@ -1,5 +1,5 @@
 from flask import Flask, render_template, Markup, request, flash, redirect, url_for, session
-from flask_login import LoginManager, login_required, UserMixin, login_user
+from flask_login import LoginManager, login_required, UserMixin, login_user, current_user, logout_user
 from flask_wtf import FlaskForm
 from wtforms import Form, PasswordField, StringField, validators, ValidationError, BooleanField
 # from passlib.hash import sha256_crypt
@@ -12,7 +12,8 @@ MyApp.config.from_pyfile('config.py')
 
 db = SQLAlchemy(MyApp)
 login_manager = LoginManager(MyApp)
-
+login_manager.init_app(MyApp)
+login_manager.login_view = 'login'
 
 class users(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -23,6 +24,9 @@ class users(UserMixin, db.Model):
     def __repr__(self):
         return '<User %r>' % self.username
 @MyApp.route("/")
+def re():
+    return redirect(url_for('template'))
+@MyApp.route("/home")
 def template():
     return render_template("index.html")
 
@@ -67,12 +71,18 @@ class Login(Form):
     remember = BooleanField('Remeber me')
 @MyApp.route("/login", methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+	return render_template('index.html')
     form = Login(request.form)
-    if form.validate():
+    if request.method == 'POST' and form.validate():
 	user = users.query.filter_by(username=form.username.data).first()
-        login_user(user, remember=form.remember.data)
-        return redirect(url_for('welcome'))
-    flash('Login Unsuccessful.')
+	if user:
+            login_user(user, remember=form.remember.data)
+            return redirect(url_for('welcome'))
+    
+    if request.method == 'POST':
+	flash('Login Unsuccessful.')
+
     return render_template('login.html',
                            form=form)
 
@@ -84,6 +94,8 @@ def welcome():
 
 @MyApp.route("/register", methods=['GET', 'POST'])
 def register():
+    if current_user.is_authenticated:
+	return render_template('index.html')
     form = Register(request.form)
     if request.method == 'POST' and form.validate():
         user = users(
@@ -95,7 +107,11 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
-
+@MyApp.route("/logout")
+@login_required
+def logout():
+   logout_user()
+   return redirect(url_for("login")) 
 
 
 @login_manager.user_loader

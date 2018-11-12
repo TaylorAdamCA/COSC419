@@ -1,4 +1,12 @@
 {% macro render_field(field) %}
+   {% if field.type == 'BooleanField' %}
+    <div class="checkbox">
+        <label>
+            {{ field(class_=class_, **kwargs) }}
+            {{ field.label.text|safe }}
+        </label>
+    </div>
+  {% else %}
   <dt>{{ field.label }}
   <dd>{{ field(**kwargs)|safe }}
   {% if field.errors %}
@@ -9,4 +17,5 @@
     </ul>
   {% endif %}
   </dd>
+   {% endif %}
 {% endmacro %}
