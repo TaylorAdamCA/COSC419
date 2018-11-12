@@ -1,6 +1,7 @@
 from flask import Flask, render_template, Markup, request, flash, redirect, url_for, session
 from flask_login import LoginManager, login_required, UserMixin, login_user
-from wtforms import Form, PasswordField, StringField, validators, ValidationError
+from flask_wtf import FlaskForm
+from wtforms import Form, PasswordField, StringField, validators, ValidationError, BooleanField
 # from passlib.hash import sha256_crypt
 import random
 from flask_sqlalchemy import SQLAlchemy
@@ -31,6 +32,9 @@ def forbiddenerror():
     return render_template('403_page.html'), 403
 
 
+def check_user_pass(form, username, password):
+    if users.query.filter_by(username=username.data).first():
+        raise ValidationError('Username already exists')
 def validate_user(form, username):
     if users.query.filter_by(username=username.data).first():
         raise ValidationError('Username already exists')
@@ -52,19 +56,23 @@ class Register(Form):
                 'confirm', message=('Passwords must match'))])
     confirm = PasswordField('Confirm:')
 
-
-
+class Login(Form):
+    username = StringField(
+        'UserName:', [
+            validators.Required()])
+    password = PasswordField(
+        'Password:', [
+            validators.DataRequired()
+                ])
+    remember = BooleanField('Remeber me')
 @MyApp.route("/login", methods=['GET', 'POST'])
 def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = users.query.filter_by(email=form.email.data).first()
-        if user and user.password == form.password.data:
-            login_user(user, remeber=form.remeber.check)
-            return redirect(url_for('welcome'))
-        else:
-            flash('Login Unsuccessful.')
-
+    form = Login(request.form)
+    if form.validate():
+	user = users.query.filter_by(username=form.username.data).first()
+        login_user(user, remember=form.remember.data)
+        return redirect(url_for('welcome'))
+    flash('Login Unsuccessful.')
     return render_template('login.html',
                            form=form)
 
@@ -84,7 +92,7 @@ def register():
             password=form.password.data)
         db.session.add(user)
         db.session.commit()
-        redirect('login')
+        return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
 
