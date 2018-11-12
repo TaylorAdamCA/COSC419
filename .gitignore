@@ -1,8 +1,7 @@
 
 #don't track content of these folders
 bootstrap/
-someOtherfoler/
-
+data/
 
 # Compiled source #
 ###################
