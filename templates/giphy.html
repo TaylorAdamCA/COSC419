@@ -1,0 +1,14 @@
+ {% extends "master.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+  </style>
+{% endblock %}
+{% block content %}
+  <div class="text-center">
+          <div class="intro-heading text-uppercase">Enjoy this random gif, courtesy of Giphy</div>
+	<script src="{{ url_for('static', filename='giphyAPI.js') }}"></script>
+  </div>
+{% endblock %}

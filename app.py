@@ -1,13 +1,14 @@
 from flask import Flask, render_template, Markup, request, flash, redirect, url_for, session
 from flask_login import LoginManager, login_required, UserMixin, login_user, current_user, logout_user
 from flask_wtf import FlaskForm
+from flask_cors import CORS, cross_origin
 from wtforms import Form, PasswordField, StringField, validators, ValidationError, BooleanField
 # from passlib.hash import sha256_crypt
 import random
 from flask_sqlalchemy import SQLAlchemy
 
 MyApp = Flask(__name__)
-
+CORS(MyApp)
 MyApp.config.from_pyfile('config.py')
 
 db = SQLAlchemy(MyApp)
@@ -29,7 +30,10 @@ def re():
 @MyApp.route("/home")
 def template():
     return render_template("index.html")
-
+@MyApp.route("/gifs")
+@cross_origin()
+def giphs():
+    return render_template("giphy.html")
 
 @MyApp.errorhandler(403)
 def forbiddenerror():
